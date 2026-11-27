@@ -56,3 +56,6 @@ Host `dist/` on any static host (Netlify, Vercel, Cloudflare Pages, S3+CDN) with
 - Live commentary is human (spectators); there is no automatic engine commentary during live games, to avoid feeding engine suggestions to players. Moves are described factually from the rules engine.
 - Season ranking uses rating *gained* in the calendar month; ratings are not reset. Medals need at least 3 rated games.
 - Sound is synthesised in the browser (no audio files); the Web Audio API must be allowed by the browser, which usually requires a first tap.
+
+## Vercel
+`vercel.json` deploys the PWA as a single `app` service (Vite). Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in the Vercel project. The free built-in AI needs nothing else. `ai-service` (KataGo) is **not** deployed on Vercel — it needs a GPU/long-running host; if you run it elsewhere, set `VITE_AI_SERVICE_URL`.
