@@ -1,0 +1,12 @@
+{
+  "name": "goplay-ai-service",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "GO PLAY AI backend: KataGo analysis-engine adapter + HTTP API",
+  "scripts": {
+    "start": "node src/server.ts",
+    "test": "vitest run"
+  },
+  "engines": { "node": ">=22.18" }
+}

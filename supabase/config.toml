@@ -1,0 +1,5 @@
+# Minimal Supabase CLI config. Run `supabase link --project-ref <ref>` then `supabase db push`.
+project_id = "goplay"
+
+[functions.game-action]
+verify_jwt = true
