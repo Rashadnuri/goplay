@@ -262,9 +262,10 @@ try {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await ctx.newPage();
     await page.goto(BASE + '/play/ai');
-    await page.waitForSelector('.notice.error');
-    const disabled = await page.getByRole('button', { name: /Oyuna başla/ }).isDisabled();
-    if (!disabled) fail('AI start must be disabled when the AI service is not configured'); else ok('AI disabled + honest notice without an AI service');
+    await page.waitForSelector('[data-testid=ai-engine]');
+    const note = await page.locator('[data-testid=ai-engine]').innerText();
+    const enabled = await page.getByRole('button', { name: /Oyuna başla/ }).isEnabled();
+    if (!enabled || !/KataGo deyil/.test(note)) fail('without an AI service the free built-in engine must be offered and labelled (not KataGo)'); else ok('built-in free AI offered + honestly labelled without an AI service');
     await ctx.close();
   }
 

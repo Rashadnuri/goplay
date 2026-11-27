@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BANK } from '../content/bank.ts';
 import { sanitize } from '../hooks/usePrefs.ts';
-import { aiAnalyze, aiConfigured, aiHealth, aiMove, aiReview } from './ai.ts';
+import { aiAnalyze, aiConfigured, aiHealth, aiMove } from './ai.ts';
 import { clockOptions, fmtClock } from './clocks.ts';
 import { COUNTRY_CODES, countryName, flag } from './countries.ts';
 import { loadGame, sendAction } from './online.ts';
@@ -120,10 +120,13 @@ describe('guest puzzle solving (device-local, answers checked in the browser)', 
 });
 
 describe('AI client without a configured service', () => {
-  it('reports not configured and refuses to invent results', async () => {
-    expect(aiConfigured).toBe(false);
-    expect(await aiHealth()).toEqual({ ok: false, reason: 'not_configured' });
+  it('falls back to the built-in engine and reports it honestly', async () => {
+    expect(aiConfigured).toBe(true);
+    expect(await aiHealth()).toEqual({ ok: true, engine: 'builtin', reason: 'not_configured' });
     const pos = { size: 9 as const, komi: 6.5, rules: 'japanese' as const, handicap: 0, moves: [] };
-    for (const f of [() => aiMove(pos, 'expert'), () => aiAnalyze(pos), () => aiReview(pos)]) await expect(f()).rejects.toMatchObject({ code: 'ai_not_configured' });
+    const m = await aiMove(pos, 'beginner');
+    expect(m.move.type === 'play' || m.move.type === 'pass').toBe(true);
+    const a = await aiAnalyze(pos, 20);
+    expect(a.candidates.length).toBeGreaterThan(0);
   });
 });

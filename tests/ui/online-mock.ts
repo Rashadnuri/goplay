@@ -228,8 +228,8 @@ if (run('ai')) {
 
   const off = await session({ uid: null, ai: false });
   await off.page.goto(`${BASE}/play/ai`, { waitUntil: 'networkidle' });
-  await off.page.waitForSelector('.notice.error');
-  if (!(await off.page.getByRole('button', { name: /Oyuna başla/ }).isDisabled())) fail('AI start must be disabled when the engine is down'); else ok('AI down → clear message, start disabled');
+  await off.page.waitForSelector('[data-testid=ai-engine]');
+  if (!(await off.page.getByRole('button', { name: /Oyuna başla/ }).isEnabled()) || !/KataGo deyil/.test(await off.page.locator('[data-testid=ai-engine]').innerText())) fail('KataGo down → must fall back to the labelled built-in engine'); else ok('KataGo down → falls back to the free built-in engine (labelled)');
   await done('ai-off', off);
 }
 

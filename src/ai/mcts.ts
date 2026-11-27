@@ -121,8 +121,9 @@ class Sim {
 class Node {
   children: Node[] = [];
   untried: number[] | null = null;
-  visits = 0; wins = 0; marginSum = 0;
-  constructor(public move: number, public parent: Node | null, public mover: number) {}
+  visits = 0; wins = 0; bin = 0; marginSum = 0;
+  /** heuristic bias (captures good, self-atari bad); fades as the node gets visited */
+  constructor(public move: number, public parent: Node | null, public mover: number, public prior = 0) {}
 }
 
 export class Mcts {
@@ -211,7 +212,11 @@ export class Mcts {
           let child: Node | null = null;
           while (node.untried.length > 0 && !child) {
             const p = node.untried.pop()!;
-            if (s.play(p, color) >= 0) { child = new Node(p, node, color); last = p; passes = 0; }
+            const cap = s.play(p, color);
+            if (cap >= 0) {
+              const selfAtari = cap === 0 && s.groupLibs(p) === 1;
+              child = new Node(p, node, color, cap * 0.5 - (selfAtari ? 0.8 : 0)); last = p; passes = 0;
+            }
           }
           if (child) { node.children.push(child); node = child; color = 3 - color; break; }
         }
@@ -224,7 +229,7 @@ export class Mcts {
         // UCT
         let best: Node | null = null, bestV = -Infinity; const lnN = Math.log(node.visits + 1);
         for (const c of node.children) {
-          const v = c.visits === 0 ? 1e9 : c.wins / c.visits + 0.6 * Math.sqrt(lnN / c.visits);
+          const v = c.visits === 0 ? 1e9 + c.prior : c.wins / c.visits + 0.5 * Math.sqrt(lnN / c.visits) + c.prior / (c.visits + 1);
           if (v > bestV) { bestV = v; best = c; }
         }
         node = best!;
@@ -236,16 +241,19 @@ export class Mcts {
       const blackWon = margin > 0;
       if (blackWon) blackWins++;
       marginSum += margin; done++;
+      const smooth = 1 / (1 + Math.exp(-margin / 6));   // search value: rewards bigger margins, steadier than win/loss
       for (let n: Node | null = node; n; n = n.parent) {
         n.visits++; n.marginSum += margin;
-        if ((n.mover === 1) === blackWon) n.wins++;   // `wins` is from the perspective of the side that made n.move
+        // `wins`/`bin` are from the perspective of the side that made n.move
+        n.wins += n.mover === 1 ? smooth : 1 - smooth;
+        if ((n.mover === 1) === blackWon) n.bin++;
       }
     }
 
     const candidates = [...root.children].sort((a, b) => b.visits - a.visits).slice(0, 10).map((c) => ({
       p: c.move,
       visits: c.visits,
-      winrate: c.visits ? (c.mover === 1 ? c.wins / c.visits : 1 - c.wins / c.visits) : 0.5,
+      winrate: c.visits ? (c.mover === 1 ? c.bin / c.visits : 1 - c.bin / c.visits) : 0.5,
       scoreLead: c.visits ? c.marginSum / c.visits : 0,
     }));
     return {

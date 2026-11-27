@@ -12,7 +12,7 @@ import { TutorialModal, useCoach, useImmersive, useTutorial } from '../component
 import { loadSaved, save, useGoGame } from '../hooks/useGoGame.ts';
 import { usePrefs } from '../hooks/usePrefs.ts';
 import { useI18n } from '../i18n/index.tsx';
-import { DIFFICULTIES, aiAnalyze, aiConfigured, aiHealth, aiMove, aiReview, type AiAnalysis, type AiPosition, type AiReview, type Difficulty } from '../lib/ai.ts';
+import { DIFFICULTIES, aiAnalyze, aiHealth, aiMove, aiReview, type AiAnalysis, type AiPosition, type AiReview, type Difficulty } from '../lib/ai.ts';
 import { toggleDeadGroup } from './LocalGame.tsx';
 
 const KEY = 'goplay.ai';
@@ -70,8 +70,8 @@ function Setup({ onStart }: { onStart: (g: GoGame, d: Difficulty, human: Color) 
             {[2, 3, 4, 5, 6, 7, 8, 9].map((h) => <option key={h} value={h}>{h}</option>)}
           </select>
         </Field>
-        <button className="btn primary block" disabled={!health?.ok} onClick={start}>{health ? t('setup.start') : <Spinner />}</button>
-        {!aiConfigured && <p className="small muted" style={{ margin: 0 }}>{t('ai.setupHint')}</p>}
+        <button className="btn primary block" disabled={!health} onClick={start}>{health ? t('setup.start') : <Spinner />}</button>
+        {health && <p className="small muted" style={{ margin: 0 }} data-testid="ai-engine">{health.engine === 'katago' ? t('ai.engineKatago') : t('ai.engineBuiltin')}{health.engine === 'builtin' && size === 19 ? ' ' + t('ai.builtin19') : ''}</p>}
       </div>
     </div>
   );

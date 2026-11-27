@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Spinner, Modal, useToast } from './ui.tsx';
 import { GoGame, pointLabel, type GameConfig } from '../engine/index.ts';
 import { useI18n, type DictKey } from '../i18n/index.tsx';
-import { aiConfigured, aiReview, type AiReview } from '../lib/ai.ts';
+import { aiReview, type AiReview } from '../lib/ai.ts';
 import { conceptsFor, type Confidence } from '../lib/concepts.ts';
 
 const CHIP: Record<Confidence, DictKey> = { fact: 'coach.fact', heuristic: 'coach.heuristic', estimate: 'coach.estimate' };
@@ -41,8 +41,7 @@ export function AiCoach({ config, moves, resultText, onShow, onClose }: { config
         <div className="row wrap"><span className="chip warn-chip">{t('coach.estimate')}</span><span>{t('coach.estimateHelp')}</span></div>
       </div>
       {resultText && <div className="row"><span className="chip ok">{t('coach.proven')}</span><strong>{resultText}</strong></div>}
-      {!aiConfigured && <div className="notice error" role="alert">{t('ai.notConfigured')}</div>}
-      {!review && <button className="btn primary" disabled={busy || !aiConfigured} onClick={run}>{busy ? <Spinner label={t('review.running')} /> : t('review.start')}</button>}
+      {!review && <button className="btn primary" disabled={busy} onClick={run}>{busy ? <Spinner label={t('review.running')} /> : t('review.start')}</button>}
       {review && (
         <>
           <div className="row wrap"><span className="chip bad">{t('review.blunders')}: {review.summary.blunders}</span><span className="chip">{t('review.mistakes')}: {review.summary.mistakes}</span><span className="chip">{t('review.inaccuracies')}: {review.summary.inaccuracies}</span><span className="chip warn-chip">{t('coach.estimate')}</span></div>

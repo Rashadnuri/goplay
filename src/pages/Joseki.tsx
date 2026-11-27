@@ -30,6 +30,7 @@ export default function Joseki() {
   const [hints, setHints] = useState<Hint[] | undefined>();
   const [, bump] = useState(0);
   useEffect(() => { aiHealth().then(setHealth); }, []);
+  const katago = health?.engine === 'katago';
 
   const begin = () => {
     const g = new GoGame(makeConfig({ size: 19 }));
@@ -68,13 +69,13 @@ export default function Joseki() {
     try { const a = await aiAnalyze(posOf(game), 150); setHints(a.candidates.filter((c) => c.p !== PASS).slice(0, 3).map((c, i) => ({ p: c.p, label: String(i + 1), strong: i === 0 }))); } catch (e) { fail(e); } finally { setBusy(false); }
   };
 
-  const ok = health?.ok;
+  const ok = katago;
   return (
     <div className="stack" style={{ maxWidth: 640, margin: '0 auto' }}>
       <div className="row between"><Link to="/learn?tab=joseki" className="small muted">← {t('academy.title')}</Link><span className="chip">{t('joseki.estimate')}</span></div>
       <h1>{t('joseki.title')}</h1>
       <div className="notice small">{t('joseki.honest')}</div>
-      {health && !ok && <div className="notice error" role="alert">{t(health.reason === 'not_configured' ? 'ai.notConfigured' : health.reason === 'no_engine' ? 'ai.noEngine' : 'ai.down')}</div>}
+      {health && !ok && <div className="notice error" role="alert">{t(health.reason === 'no_engine' ? 'ai.noEngine' : health.reason === 'down' ? 'ai.down' : 'ai.notConfigured')}</div>}
       {!game ? (
         <div className="card stack">
           <span className="label">{t('joseki.startPoint')}</span>
